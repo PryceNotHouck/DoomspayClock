@@ -67,6 +67,19 @@ def fetch(var, file):
         convert_to_csv(file)
 
 
+def get_unemployment():
+    year = -1
+    for i in range(0, 24):
+        year += 1
+        file = "laucnty" + "{:02d}".format(year) + ".xlsx"
+        fetch(4, file)
+    year = 89
+    for i in range(0, 10):
+        year += 1
+        file = "laucnty" + "{:02d}".format(year) + ".xlsx"
+        fetch(4, file)
+
+
 if __name__ == "__main__":
     fetch(4, "laucnty00.xlsx")
     flush_local()

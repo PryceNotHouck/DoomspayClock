@@ -65,6 +65,9 @@ def fetch(var, file):
         with open(file_path, 'wb') as f:
             f.write(res.content)
         convert_to_csv(file)
+    else:
+        with open(file_path, 'wb') as f:
+            f.write(res.content)
 
 
 def get_unemployment():
@@ -78,6 +81,39 @@ def get_unemployment():
         year += 1
         file = "laucnty" + "{:02d}".format(year) + ".xlsx"
         fetch(4, file)
+
+
+def get_inflation():
+    fetch(1, "inflation.xlsx")
+
+
+def get_cpi():
+    fetch(3, "cpi.xlsx")
+
+
+def get_housing():
+    fetch(5, "housingprices.xls")
+
+
+def get_cboe():
+    fetch(8, "GVZ_History.csv")
+    fetch(8, "OVX_History.csv")
+    fetch(8, "VIXS&P9D_History.csv")
+    fetch(8, "VVIX_History.csv")
+    fetch(8, "VXAPL_History.csv")
+    fetch(8, "VXAZN_History.csv")
+    fetch(8, "VXEEM_History.csv")
+
+
+def get_loan_default():
+    fetch(6, "DRBLACBS.xls")
+    fetch(6, "DRALACBN.xls")
+
+
+def get_credit():
+    fetch(7, "DRALACBN.xls")
+    fetch(7, "DRCLACBS.xls")
+    fetch(7, "DRCCLACBS.xls")
 
 
 if __name__ == "__main__":

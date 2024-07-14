@@ -4,6 +4,16 @@ import openpyxl
 import os
 
 
+def flush_local():
+    dir_path = os.path.join(os.path.dirname(__file__), "Local")
+    if os.path.exists(dir_path):
+        files = os.listdir(dir_path)
+        for file in files:
+            file_path = os.path.join(dir_path, file)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+
+
 def convert_xlsx(file):
     file_path = "Local/" + str(file)
     workbook = openpyxl.load_workbook(file_path)
@@ -77,3 +87,4 @@ def fetch(var, file):
 
 if __name__ == "__main__":
     fetch(4, "laucnty00.xlsx")
+    flush_local()

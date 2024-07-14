@@ -14,7 +14,7 @@ def flush_local():
                 os.remove(file_path)
 
 
-def convert_xlsx(file):
+def convert_to_csv(file):
     file_path = "Local/" + str(file)
     workbook = openpyxl.load_workbook(file_path)
     sheet = workbook.active
@@ -36,53 +36,35 @@ def fetch(var, file):
             pass
         case 1:
             # Inflation Rate
-            pass
+            url += "Statista/" + file
         case 2:
             # Trade/Foreign Investment
             pass
         case 3:
             # Consumer Price Index
-            pass
+            url += "Statista/" + file
         case 4:
             # Unemployment
             url += "BLS/" + file
         case 5:
             # Housing Prices
-            pass
+            url += "FHFA/" + file
         case 6:
             # Loan Default Rates
-            pass
+            url += "FRED/" + file
         case 7:
             # Credit Delinquency
-            pass
+            url += "FRED/" + file
         case 8:
-            # Gold ETF
-            pass
-        case 9:
-            # Oil ETF
-            pass
-        case 10:
-            # S&P 500 9-Day
-            pass
-        case 11:
-            # VIX Index
-            pass
-        case 12:
-            # VIX Emerging Markets
-            pass
-        case 13:
-            # VIX Apple
-            pass
-        case 14:
-            # VIX Amazon
-            pass
+            # Cboe
+            url += "Cboe/" + file
 
     res = requests.get(url, allow_redirects=True)
     file_path = "Local/" + file
-    if file.endswith(".xlsx"):
+    if file.endswith(".xlsx") or file.endswith(".xls"):
         with open(file_path, 'wb') as f:
             f.write(res.content)
-        convert_xlsx(file)
+        convert_to_csv(file)
 
 
 if __name__ == "__main__":

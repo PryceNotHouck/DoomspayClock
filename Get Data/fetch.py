@@ -35,27 +35,21 @@ def fetch(var, file):
             # GDP Growth
             pass
         case 1:
-            # Inflation Rate
+            # Inflation Rate, CPI
             url += "Statista/" + file
         case 2:
             # Trade/Foreign Investment
             pass
         case 3:
-            # Consumer Price Index
-            url += "Statista/" + file
-        case 4:
             # Unemployment
             url += "BLS/" + file
-        case 5:
+        case 4:
             # Housing Prices
             url += "FHFA/" + file
+        case 5:
+            # Loan Default Rates, Credit Delinquency
+            url += "FRED/" + file
         case 6:
-            # Loan Default Rates
-            url += "FRED/" + file
-        case 7:
-            # Credit Delinquency
-            url += "FRED/" + file
-        case 8:
             # Cboe
             url += "Cboe/" + file
 
@@ -75,12 +69,12 @@ def get_unemployment():
     for i in range(0, 24):
         year += 1
         file = "laucnty" + "{:02d}".format(year) + ".xlsx"
-        fetch(4, file)
+        fetch(3, file)
     year = 89
     for i in range(0, 10):
         year += 1
         file = "laucnty" + "{:02d}".format(year) + ".xlsx"
-        fetch(4, file)
+        fetch(3, file)
 
 
 def get_inflation():
@@ -88,34 +82,34 @@ def get_inflation():
 
 
 def get_cpi():
-    fetch(3, "cpi.xlsx")
+    fetch(1, "cpi.xlsx")
 
 
 def get_housing():
-    fetch(5, "housingprices.xls")
+    fetch(4, "housingprices.xls")
 
 
 def get_cboe():
-    fetch(8, "GVZ_History.csv")
-    fetch(8, "OVX_History.csv")
-    fetch(8, "VIXS&P9D_History.csv")
-    fetch(8, "VVIX_History.csv")
-    fetch(8, "VXAPL_History.csv")
-    fetch(8, "VXAZN_History.csv")
-    fetch(8, "VXEEM_History.csv")
+    fetch(6, "GVZ_History.csv")
+    fetch(6, "OVX_History.csv")
+    fetch(6, "VIXS&P9D_History.csv")
+    fetch(6, "VVIX_History.csv")
+    fetch(6, "VXAPL_History.csv")
+    fetch(6, "VXAZN_History.csv")
+    fetch(6, "VXEEM_History.csv")
 
 
 def get_loan_default():
-    fetch(6, "DRBLACBS.xls")
-    fetch(6, "DRALACBN.xls")
+    fetch(5, "DRBLACBS.xls")
+    fetch(5, "DRALACBN.xls")
 
 
 def get_credit():
-    fetch(7, "DRALACBN.xls")
-    fetch(7, "DRCLACBS.xls")
-    fetch(7, "DRCCLACBS.xls")
+    fetch(5, "DRALACBN.xls")
+    fetch(5, "DRCLACBS.xls")
+    fetch(5, "DRCCLACBS.xls")
 
 
 if __name__ == "__main__":
-    fetch(4, "laucnty00.xlsx")
+    fetch(3, "laucnty00.xlsx")
     flush_local()

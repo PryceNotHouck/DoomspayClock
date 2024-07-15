@@ -1,6 +1,7 @@
 import requests
 import csv
 import openpyxl
+import xlrd
 import os
 
 
@@ -14,7 +15,7 @@ def flush_local():
                 os.remove(file_path)
 
 
-def convert_to_csv(file):
+def convert_xlsx(file):
     file_path = "Local/" + str(file)
     workbook = openpyxl.load_workbook(file_path)
     sheet = workbook.active
@@ -24,7 +25,20 @@ def convert_to_csv(file):
         col = csv.writer(csvfile)
         for row in sheet.iter_rows(values_only=True):
             col.writerow(row)
+    os.remove(file_path)
 
+
+def convert_xls(file):
+    file_path = "Local/" + str(file)
+    csv_file_path = os.path.splitext(file_path)[0] + ".csv"
+    workbook = xlrd.open_workbook(file_path)
+    sheet = workbook.sheet_by_index(0)
+
+    with open(csv_file_path, 'w', newline='') as csvfile:
+        col = csv.writer(csvfile)
+        for row_idx in range(sheet.nrows):
+            row = sheet.row_values(row_idx)
+            col.writerow(row)
     os.remove(file_path)
 
 
@@ -56,10 +70,14 @@ def fetch(var, file):
 
     res = requests.get(url, allow_redirects=True)
     file_path = "Local/" + file
-    if file.endswith(".xlsx") or file.endswith(".xls"):
+    if file.endswith(".xlsx"):
         with open(file_path, 'wb') as f:
             f.write(res.content)
-        convert_to_csv(file)
+        convert_xlsx(file)
+    elif file.endswith(".xls"):
+        with open(file_path, 'wb') as f:
+            f.write(res.content)
+        convert_xls(file)
     else:
         with open(file_path, 'wb') as f:
             f.write(res.content)

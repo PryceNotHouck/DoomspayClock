@@ -29,6 +29,7 @@ def convert_to_csv(file):
 
 
 def fetch(var, file):
+    print("Fetching:", file)
     url = "https://raw.githubusercontent.com/PryceNotHouck/DoomspayClock/master/Datasets/"
     match var:
         case 0:
@@ -111,5 +112,5 @@ def get_credit():
 
 
 if __name__ == "__main__":
-    fetch(3, "laucnty00.xlsx")
+    get_unemployment()
     flush_local()

@@ -35,7 +35,7 @@ def convert_xls(file):
     workbook = xlrd.open_workbook(file_path)
     sheet = workbook.sheet_by_index(0)
 
-    # Accounts Excel's old base date (1900-01-01)
+    # Accounts for Excel's old base date (1900-01-01)
     base_date = datetime(1899, 12, 30)
 
     with open(csv_file_path, 'w', newline='') as csvfile:

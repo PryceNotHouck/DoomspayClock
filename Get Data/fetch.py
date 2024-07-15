@@ -3,6 +3,7 @@ import csv
 import openpyxl
 import xlrd
 import os
+from datetime import datetime, timedelta
 
 
 def flush_local():
@@ -34,11 +35,18 @@ def convert_xls(file):
     workbook = xlrd.open_workbook(file_path)
     sheet = workbook.sheet_by_index(0)
 
+    # Accounts Excel's old base date (1900-01-01)
+    base_date = datetime(1899, 12, 30)
+
     with open(csv_file_path, 'w', newline='') as csvfile:
         col = csv.writer(csvfile)
-        for row_idx in range(sheet.nrows):
-            row = sheet.row_values(row_idx)
-            col.writerow(row)
+        for row in range(sheet.nrows):
+            row_values = sheet.row_values(row)
+            if isinstance(row_values[0], float):
+                date_value = base_date + timedelta(days=row_values[0])
+                row_values[0] = date_value.strftime("%Y-%m-%d")
+            col.writerow(row_values)
+
     os.remove(file_path)
 
 

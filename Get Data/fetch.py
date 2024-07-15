@@ -97,7 +97,7 @@ def get_unemployment():
 
 
 def get_inflation():
-    fetch(1, "inflation.xlsx")
+    fetch(1, "inflationData.xlsx")
 
 
 def get_cpi():

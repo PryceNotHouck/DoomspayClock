@@ -11,3 +11,4 @@ def credit():
 if __name__ == "__main__":
     credit()
     fetch.flush_local()
+    print("hi")

@@ -1,3 +1,5 @@
+import zipfile
+
 import requests
 import csv
 import openpyxl
@@ -14,19 +16,6 @@ def flush_local():
             file_path = os.path.join(dir_path, file)
             if os.path.isfile(file_path):
                 os.remove(file_path)
-
-
-def convert_xlsx(file):
-    file_path = "Local/" + str(file)
-    workbook = openpyxl.load_workbook(file_path)
-    sheet = workbook.active
-
-    csv_file_path = os.path.splitext(file_path)[0] + ".csv"
-    with open(csv_file_path, 'w', newline="") as csvfile:
-        col = csv.writer(csvfile)
-        for row in sheet.iter_rows(values_only=True):
-            col.writerow(row)
-    os.remove(file_path)
 
 
 def convert_xls(file):
@@ -46,8 +35,133 @@ def convert_xls(file):
                 date_value = base_date + timedelta(days=row_values[0])
                 row_values[0] = date_value.strftime("%Y-%m-%d")
             col.writerow(row_values)
+    os.remove(file_path)
+
+
+def convert_xlsx(file):
+    file_path = "Local/" + str(file)
+    workbook = openpyxl.load_workbook(file_path)
+    sheet = workbook.active
+
+    csv_file_path = os.path.splitext(file_path)[0] + ".csv"
+    with open(csv_file_path, 'w', newline="") as csvfile:
+        col = csv.writer(csvfile)
+        for row in sheet.iter_rows(values_only=True):
+            col.writerow(row)
+    os.remove(file_path)
+
+
+def convert_xls_bea(file):
+    file_path = file
+    csv_file_path = os.path.splitext(file_path)[0] + ".csv"
+    workbook = xlrd.open_workbook(file_path)
+
+    # Accounts for Excel's old base date (1900-01-01)
+    base_date = datetime(1899, 12, 30)
+
+    with open(csv_file_path, 'w', newline='') as csvfile:
+        col = csv.writer(csvfile)
+
+        for sheet_index in range(workbook.nsheets):
+            sheet = workbook.sheet_by_index(sheet_index)
+            for row in range(sheet.nrows):
+                row_values = sheet.row_values(row)
+                if isinstance(row_values[0], float) and sheet.cell_type(row, 0) == xlrd.XL_CELL_DATE:
+                    date_value = xlrd.xldate.xldate_as_datetime(row_values[0], workbook.datemode)
+                    row_values[0] = date_value.strftime("%Y-%m-%d")
+                col.writerow(row_values)
+            if sheet_index < workbook.nsheets - 1:
+                col.writerow([])
 
     os.remove(file_path)
+
+
+def convert_xlsx_bea(file):
+    try:
+        workbook = openpyxl.load_workbook(file)
+        csv_file_path = os.path.splitext(file)[0] + ".csv"
+
+        with open(csv_file_path, 'w', newline="") as csvfile:
+            col = csv.writer(csvfile)
+
+            for sheet_name in workbook.sheetnames:
+                sheet = workbook[sheet_name]
+                for row in sheet.iter_rows(values_only=True):
+                    col.writerow(row)
+                col.writerow([])
+        os.remove(file)
+    except zipfile.BadZipfile:
+        pass
+
+
+def fetch_bea():
+    print("Warning: This takes several minutes to complete.")
+    base_url = "https://raw.githubusercontent.com/PryceNotHouck/DoomspayClock/master/Datasets/BEA%20GDP/"
+    base_path = "Local/BEA/"
+
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
+
+    for year in range(6, 25):
+        year_str = f"200{year}" if year <= 9 else f"20{year}"
+        year_url = f"{base_url}{year_str}/"
+        year_path = os.path.join(base_path, year_str)
+
+        if not os.path.exists(year_path):
+            os.makedirs(year_path)
+
+        quarter_range = 2 if year_str == "2024" else 5
+
+        for quarter in range(1, quarter_range):
+            quarter_url = f"{year_url}Q{quarter}/"
+            quarter_path = os.path.join(year_path, f"Q{quarter}")
+
+            if not os.path.exists(quarter_path):
+                os.makedirs(quarter_path)
+
+            if int(year_str) <= 2009:
+                section_range = 9
+            else:
+                section_range = 8
+
+            for section in range(0, section_range):
+                if int(year_str) <= 2010:
+                    file_url = f"{quarter_url}Section{section}ALL_xls.xls"
+                    file_path = os.path.join(quarter_path, f"Section{section}ALL_xls.xls")
+                elif int(year_str) >= 2017:
+                    if int(year_str) == 2017 and quarter < 3:
+                        file_url = f"{quarter_url}Section{section}all_xls.xls"
+                        file_path = os.path.join(quarter_path, f"Section{section}all_xls.xls")
+                    else:
+                        file_url = f"{quarter_url}Section{section}all_xls.xlsx"
+                        file_path = os.path.join(quarter_path, f"Section{section}all_xls.xlsx")
+                else:
+                    file_url = f"{quarter_url}Section{section}all_xls.xls"
+                    file_path = os.path.join(quarter_path, f"Section{section}all_xls.xls")
+                print("Fetching:", file_path)
+                res = requests.get(file_url, allow_redirects=True)
+                if res.status_code == 200:
+                    with open(file_path, 'wb') as f:
+                        f.write(res.content)
+                    if file_path.endswith(".xls"):
+                        convert_xls_bea(file_path)
+                    else:
+                        convert_xlsx_bea(file_path)
+                else:
+                    print(f"Failed to fetch {file_url}, retrying.")
+                    file_url = f"{quarter_url}Section{section}all_xls.xls"
+                    file_path = os.path.join(quarter_path, f"Section{section}all_xls.xls")
+                    print("Fetching:", file_path)
+                    res = requests.get(file_url, allow_redirects=True)
+                    if res.status_code == 200:
+                        with open(file_path, 'wb') as f:
+                            f.write(res.content)
+                        if file_path.endswith(".xls"):
+                            convert_xls_bea(file_path)
+                        else:
+                            convert_xlsx_bea(file_path)
+                    else:
+                        print(f"Failed to fetch {file_url}, cannot retry.")
 
 
 def fetch(var, file):
@@ -56,13 +170,13 @@ def fetch(var, file):
     match var:
         case 0:
             # GDP Growth
-            pass
+            fetch_bea()
         case 1:
             # Inflation Rate, CPI
             url += "Statista/" + file
         case 2:
             # Trade/Foreign Investment
-            pass
+            fetch_bea()
         case 3:
             # Unemployment
             url += "BLS/" + file
@@ -138,5 +252,4 @@ def get_credit():
 
 
 if __name__ == "__main__":
-    get_unemployment()
-    flush_local()
+    fetch_bea()

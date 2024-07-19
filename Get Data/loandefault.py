@@ -4,6 +4,23 @@ import os
 import pandas as pd
 
 
+def loandefault_points():
+    fetch.get_loan_default()
+    points = 0
+    local_path = os.path.join(os.path.dirname(__file__), "Local")
+
+    for file in os.listdir(local_path):
+        file_path = os.path.join(os.path.dirname(__file__), "Local", file)
+        with open(file_path, newline='') as f:
+            reader = csv.reader(f)
+            for i in range(0, 11):
+                next(reader)
+            for row in reader:
+                points += len(row)
+    fetch.flush_local()
+    print("Loan Default Data Points:", points)
+
+
 def loandefault():
     fetch.get_loan_default()
     data = {}

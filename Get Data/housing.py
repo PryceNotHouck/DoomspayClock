@@ -4,7 +4,7 @@ import os
 import pandas as pd
 
 
-def loandefault_points():
+def housing_points():
     fetch.get_housing()
     points = 0
     local_path = os.path.join(os.path.dirname(__file__), "Local")
@@ -18,7 +18,6 @@ def loandefault_points():
             for row in reader:
                 points += len(row)
     fetch.flush_local()
-    print("Housing Data Points:", points)
     return points
 
 

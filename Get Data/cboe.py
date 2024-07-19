@@ -4,6 +4,22 @@ import os
 import pandas as pd
 
 
+def cboe_points():
+    fetch.get_cboe()
+    points = 0
+    local_path = os.path.join(os.path.dirname(__file__), "Local")
+
+    for file in os.listdir(local_path):
+        file_path = os.path.join(os.path.dirname(__file__), "Local", file)
+        with open(file_path, newline='') as f:
+            reader = csv.reader(f)
+            next(reader)
+            for row in reader:
+                points += len(row)
+    fetch.flush_local()
+    return points
+
+
 def cboe():
     fetch.get_cboe()
     data = {}

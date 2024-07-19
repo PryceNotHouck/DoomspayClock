@@ -18,7 +18,6 @@ def unemployment_points():
             for row in reader:
                 points += len(row)
     fetch.flush_local()
-    print("Unemployment Data Points:", points)
     return points
 
 

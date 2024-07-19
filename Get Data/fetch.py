@@ -222,7 +222,7 @@ def get_inflation():
 
 
 def get_cpi():
-    fetch(1, "cpi.xlsx")
+    fetch(1, "cpi_data.xlsx")
 
 
 def get_housing():

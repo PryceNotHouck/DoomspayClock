@@ -18,7 +18,6 @@ def inflation_points():
             for row in reader:
                 points += len(row)
     fetch.flush_local()
-    print("Inflation Data Points:", points)
     return points
 
 

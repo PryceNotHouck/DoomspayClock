@@ -1,6 +1,24 @@
 import fetch
 import pandas as pd
 import os
+import csv
+
+
+def unemployment_points():
+    fetch.get_unemployment()
+    points = 0
+    local_path = os.path.join(os.path.dirname(__file__), "Local")
+
+    for file in os.listdir(local_path):
+        file_path = os.path.join(os.path.dirname(__file__), "Local", file)
+        with open(file_path, newline='') as f:
+            reader = csv.reader(f)
+            for i in range(0, 6):
+                next(reader)
+            for row in reader:
+                points += len(row)
+    fetch.flush_local()
+    print("Unemployment Data Points:", points)
 
 
 def process_file(file, data):
@@ -38,5 +56,5 @@ def unemployment():
 
 
 if __name__ == "__main__":
-    unemployment()
+    unemployment_points()
     fetch.flush_local()

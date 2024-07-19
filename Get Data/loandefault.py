@@ -19,6 +19,7 @@ def loandefault_points():
                 points += len(row)
     fetch.flush_local()
     print("Loan Default Data Points:", points)
+    return points
 
 
 def loandefault():

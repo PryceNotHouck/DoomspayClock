@@ -19,6 +19,7 @@ def unemployment_points():
                 points += len(row)
     fetch.flush_local()
     print("Unemployment Data Points:", points)
+    return points
 
 
 def process_file(file, data):

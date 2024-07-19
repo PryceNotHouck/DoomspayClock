@@ -4,6 +4,24 @@ import os
 import pandas as pd
 
 
+def inflation_points():
+    fetch.get_inflation()
+    points = 0
+    local_path = os.path.join(os.path.dirname(__file__), "Local")
+
+    for file in os.listdir(local_path):
+        file_path = os.path.join(os.path.dirname(__file__), "Local", file)
+        with open(file_path, newline='') as f:
+            reader = csv.reader(f)
+            for i in range(0, 4):
+                next(reader)
+            for row in reader:
+                points += len(row)
+    fetch.flush_local()
+    print("Inflation Data Points:", points)
+    return points
+
+
 def inflation():
     fetch.get_inflation()
     data = []

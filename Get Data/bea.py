@@ -371,7 +371,7 @@ def process8(file, data):
 
 
 def gdp():
-    #fetch.fetch_bea()
+    fetch.fetch_bea()
     data = {}
     local_path = os.path.join(os.path.dirname(__file__), "Local/BEA")
 

@@ -3,6 +3,7 @@ from loandefault import loandefault_points
 from inflation import inflation_points
 from housing import housing_points
 from cboe import cboe_points
+from credit import credit_points
 from cpi import cpi_points
 from bea import gdp_points
 from bea import trade_points
@@ -15,9 +16,10 @@ def datapoints():
     housing = housing_points()
     cboe = cboe_points()
     cpi = cpi_points()
+    credit = credit_points()
     gdp = gdp_points()
     trade = trade_points()
-    total = unemployment + loan + inflation + housing + cboe + cpi + gdp + trade
+    total = unemployment + loan + inflation + housing + cboe + cpi + credit + gdp + trade
 
     print()
     print()
@@ -27,6 +29,7 @@ def datapoints():
     print("Housing Data Points:", f'{housing:,}')
     print("CBOE Data Points:", f'{cboe:,}')
     print("CPI Data Points:", f'{cpi:,}')
+    print("Credit Delinquency Data Points:", f'{credit:,}')
     print("GDP Data Points:", f'{gdp:,}')
     print("Trade Data Points:", f'{trade:,}')
     print("---------------------------------")

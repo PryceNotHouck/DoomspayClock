@@ -4,62 +4,186 @@ import os
 import pandas as pd
 
 
-def gdp_points():
-    return 0
-
-
 def process0(file, data):
-    return 0
+    return data
 
 
 def process1(file, data):
     with open(file, newline='') as f:
         reader = csv.reader(f)
-        for i in range(0, 131):
-            next(reader)
-        years = reader.__next__()
+        row = []
+        exit_table = False
+        years = []
+        while not exit_table:
+            try:
+                if row[1].startswith('    Gross domestic product'):
+                    exit_table = True
+                else:
+                    years = row
+                    row = reader.__next__()
+            except IndexError:
+                row = reader.__next__()
         years.remove("Line")
         years.remove("")
         years.remove("")
+        for i in range(0, len(years)):
+            if years[i].endswith(".0"):
+                years[i] = years[i][:-2]
         for year in years:
-            # Adjacency List - Year : Array[[Data Point, Year of Origin]]
-            data[year] = []
-        for i in range(1, 24):
+            try:
+                test = data[year]
+                data[year].append([])
+            except KeyError:
+                data[year] = []
+        row.reverse()
+        for j in range(0, 3):
+            row.pop()
+        row.reverse()
+        for point in range(0, len(row)):
+            # Gross Domestic Product Delta
+            data[years[point]].append([row[point], file[64:68], file[69:71], 'GDP'])
+
+        exit_table = False
+        while not exit_table:
             row = reader.__next__()
-            row.reverse()
-            for j in range(0, 3):
-                row.pop()
-            row.reverse()
-            if i == 1 or i == 2 or i == 6 or i == 14 or i == 17 or i == 20:
-                # 1 - GDP Delta
-                # 2 - Delta Personal Consumption Expenditures
-                # 6 - Delta Gross Private Domestic Investment
-                # 14 - Delta Net Exports
-                # 17 - Delta Net Imports
-                # 20 - Government Consumption Expenditures and Gross Investment
+            if row[1].startswith("Personal consumption expenditures"):
+                row.reverse()
+                for j in range(0, 3):
+                    row.pop()
+                row.reverse()
                 for point in range(0, len(row)):
-                    data[years[point]].append([row[point], file[64:68]])
+                    data[years[point]].append([row[point], file[64:68], file[69:71], 'PCE'])
+            elif row[1].startswith("Gross private domestic investment"):
+                row.reverse()
+                for j in range(0, 3):
+                    row.pop()
+                row.reverse()
+                for point in range(0, len(row)):
+                    data[years[point]].append([row[point], file[64:68], file[69:71], 'GPDI'])
+            elif row[1].startswith("Net exports of goods and services"):
+                row = reader.__next__()
+                row.reverse()
+                for j in range(0, 3):
+                    row.pop()
+                row.reverse()
+                for point in range(0, len(row)):
+                    data[years[point]].append([row[point], file[64:68], file[69:71], 'NE'])
+            elif row[1].startswith("Government consumption expenditures and gross investment"):
+                row.reverse()
+                for j in range(0, 3):
+                    row.pop()
+                row.reverse()
+                for point in range(0, len(row)):
+                    data[years[point]].append([row[point], file[64:68], file[69:71], 'GCEGI'])
+                exit_table = True
     return data
 
 
 def process2(file, data):
-    return 0
+    with open(file, newline='') as f:
+        reader = csv.reader(f)
+        row = []
+        exit_table = False
+        years = []
+        while not exit_table:
+            try:
+                if row[1].startswith('Personal income'):
+                    exit_table = True
+                else:
+                    years = row
+                    row = reader.__next__()
+            except IndexError:
+                row = reader.__next__()
+        years.remove("Line")
+        years.remove("")
+        years.remove("")
+        for i in range(0, len(years)):
+            if years[i].endswith(".0"):
+                years[i] = years[i][:-2]
+        for year in years:
+            try:
+                test = data[year]
+                data[year].append([])
+            except KeyError:
+                data[year] = []
+        exit_table = False
+        while not exit_table:
+            row = reader.__next__()
+            if row[1].startswith("  Personal saving as a percentage of disposable personal income"):
+                row.reverse()
+                for j in range(0, 3):
+                    row.pop()
+                row.reverse()
+                for point in range(0, len(row)):
+                    data[years[point]].append([row[point], file[64:68], file[69:71], 'PSPDPI'])
+            elif row[1].startswith("    Disposable personal income, current dollars"):
+                row.reverse()
+                for j in range(0, 3):
+                    row.pop()
+                row.reverse()
+                for point in range(0, len(row)):
+                    data[years[point]].append([row[point], file[64:68], file[69:71], 'DPI'])
+                exit_table = True
+
+        exit_table = False
+        years = []
+        while not exit_table:
+            try:
+                if row[1].startswith('    Personal consumption expenditures'):
+                    exit_table = True
+                else:
+                    years = row
+                    row = reader.__next__()
+            except IndexError:
+                row = reader.__next__()
+        years.remove("Line")
+        years.remove("")
+        years.remove("")
+        for i in range(0, len(years)):
+            if years[i].endswith(".0"):
+                years[i] = years[i][:-2]
+        for year in years:
+            try:
+                test = data[year]
+                data[year].append([])
+            except KeyError:
+                data[year] = []
+
+        exit_table = False
+        while not exit_table:
+            row = reader.__next__()
+            if row[1].startswith("Durable goods") or row[1].startswith("Goods"):
+                row.reverse()
+                for j in range(0, 3):
+                    row.pop()
+                row.reverse()
+                for point in range(0, len(row)):
+                    data[years[point]].append([row[point], file[64:68], file[69:71], 'G'])
+            elif row[1].startswith("Services"):
+                row.reverse()
+                for j in range(0, 3):
+                    row.pop()
+                row.reverse()
+                for point in range(0, len(row)):
+                    data[years[point]].append([row[point], file[64:68], file[69:71], 'S'])
+                exit_table = True
+    return data
 
 
 def process3(file, data):
-    return 0
+    return data
 
 
 def process4(file, data):
-    return 0
+    return data
 
 
 def process5(file, data):
-    return 0
+    return data
 
 
 def process6(file, data):
-    return 0
+    return data
 
 
 def process7(file, data):
@@ -67,16 +191,17 @@ def process7(file, data):
 
 
 def process8(file, data):
-    return 0
+    return data
 
 
 def gdp():
     #fetch.fetch_bea()
     data = {}
     local_path = os.path.join(os.path.dirname(__file__), "Local/BEA")
-    year = 2006
 
     for year in os.listdir(local_path):
+        if year == "2024":
+            continue
         year_path = os.path.join(local_path, year)
         for quarter in os.listdir(year_path):
             quarter_path = os.path.join(year_path, quarter)
@@ -84,11 +209,41 @@ def gdp():
                 if file.startswith("Section1"):
                     file_path = os.path.join(quarter_path, file)
                     data = process1(file_path, data)
-                elif file.startswith("Section7"):
+                elif file.startswith("Section2"):
                     file_path = os.path.join(quarter_path, file)
-                    data = process7(file_path, data)
+                    data = process2(file_path, data)
                 else:
                     continue
+
+    years = data.keys()
+    intermediate = []
+    final = []
+    for year in sorted(years):
+        intermediate.append([year] + data[year])
+        final.append([year] + [-1])
+    for i in range(0, len(intermediate)):
+        seen = ["Year", "Last Reference Year"]
+        for var in intermediate[i]:
+            if var == final[i][0]:
+                continue
+            try:
+                if var[3] in seen:
+                    if int(var[1]) > final[i][1]:
+                        final[i][1] = int(var[1])
+                        final[i][seen.index(var[3])] = var[0]
+                else:
+                    seen.append(var[3])
+                    final[i][1] = int(var[1])
+                    final[i].append(var[0])
+            except IndexError:
+                continue
+    compiled = pd.DataFrame(final, columns=["Year", "Last Refernce Year", "GDP Delta",
+                                            "Personal Consumption Expenditures", "Gross Private Domestic Investment",
+                                            "Net Exports", "Government Consumption and Gross Investment",
+                                            "Personal Savings %", "Disposable Personal Income",
+                                            "Goods Consumption", "Service Consumption"])
+    compiled.to_csv('gdp.csv', index=False)
+    print("GDP Complete")
 
 
 if __name__ == "__main__":

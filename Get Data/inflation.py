@@ -11,13 +11,15 @@ def inflation_points():
 
     for file in os.listdir(local_path):
         file_path = os.path.join(os.path.dirname(__file__), "Local", file)
+        if file_path.endswith("BEA"):
+            continue
         with open(file_path, newline='') as f:
             reader = csv.reader(f)
             for i in range(0, 4):
                 next(reader)
             for row in reader:
                 points += len(row)
-    fetch.flush_local()
+    #fetch.flush_local()
     return points
 
 

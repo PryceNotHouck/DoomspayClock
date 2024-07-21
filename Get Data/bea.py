@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def gdp_points():
-    fetch.fetch_bea()
+    #fetch.fetch_bea()
     points = 0
     local_path = os.path.join(os.path.dirname(__file__), "Local/BEA")
     for year in os.listdir(local_path):
@@ -35,7 +35,7 @@ def gdp_points():
 
 
 def trade_points():
-    fetch.fetch_bea()
+    #fetch.fetch_bea()
     points = 0
     local_path = os.path.join(os.path.dirname(__file__), "Local/BEA")
     for year in os.listdir(local_path):

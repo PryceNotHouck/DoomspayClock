@@ -2,6 +2,16 @@ import csv
 import os
 
 
+def flush_years():
+    dir_path = os.path.join(os.path.dirname(__file__), "Years")
+    if os.path.exists(dir_path):
+        files = os.listdir(dir_path)
+        for file in files:
+            file_path = os.path.join(dir_path, file)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+
+
 def sort_annual():
     for year in range(1929, 2024):
         data = []

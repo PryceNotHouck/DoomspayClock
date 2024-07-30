@@ -424,6 +424,11 @@ def gdp():
 
 def trade():
     # fetch.fetch_bea()
+
+    # Adjacency List - Data in this file is implemented as an adjacency list due to the volume of data being handled at
+    # once for the BEA data set. Each data point for this set is stored along with the most recent year to report,
+    # with more recent years being considered higher weight under the assumption that research methods were growing more
+    # informed with time.
     data = {}
     local_path = os.path.join(os.path.dirname(__file__), "Local/BEA")
 

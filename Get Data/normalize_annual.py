@@ -1,6 +1,19 @@
 from sort_annual import sort_annual, flush_years
 import os
 import csv
+import heapq
+
+
+def priority_queue(data):
+    # Priority Queue - Associate the index for each weight with its rank among all other weights, used to ensure that
+    # all years' weights total up to +/- 1 if any values are missing.
+    priority = []
+    descending = sorted(data, reverse=True)
+    for i in range(len(data)):
+        for j in range(len(descending)):
+            if data[i] == descending[j]:
+                heapq.heappush(priority, (j+1, i))
+    return priority
 
 
 def adjust_midnight(data):
@@ -63,27 +76,70 @@ def normalize_annual():
     weights = [0.005, 0.005, 0.02, 0.005, 0.005, 0.005, 0.005, 0, 0, 0.01, 0, 0, 0, 0, 0.025, 0.025, 0.01, 0.05, 0.01,
                0.01, 0.01, 0.01, 0, 0.05, 0, 0, 0, 0.01, 0.08, 0, 0.01, 0, 0.05, 0.1, 0.0375, 0.0375, 0.0375, 0.0375,
                0.025, 0.025, 0.025, 0.025, 0, 0.002, 0.002, 0.02, 0.002, 0.002, 0, 0.02, 0.002, 0, 0.20]
+    priority_weights = priority_queue(weights)
+
     year_data_path = os.path.join(os.path.dirname(__file__), "Years")
     noon_data_path = os.path.join(os.path.dirname(__file__), "Years", "1955_denormalized.csv")
     midnight_data_path = os.path.join(os.path.dirname(__file__), "Years", "2009_denormalized.csv")
+
+    noon = []
+    midnight = []
     with open(noon_data_path, newline='') as f:
         reader = csv.reader(f)
-        data_columns = reader.__next__()
         next(reader)
-        noon = reader.__next__()
+        next(reader)
+        noon_str = reader.__next__()
+        for val in noon_str:
+            noon.append(float(val))
     with open(midnight_data_path, newline='') as f:
         reader = csv.reader(f)
         next(reader)
         next(reader)
-        midnight = reader.__next__()
+        midnight_str = reader.__next__()
+        for val in midnight_str:
+            midnight.append(float(val))
     noon = adjust_noon(noon)
     midnight = adjust_midnight(midnight)
+    for i in range(len(weights)):
+        noon[i] *= float(weights[i])
+        midnight[i] *= float(weights[i])
+
     for file in os.listdir(year_data_path):
         if file.startswith("2009") or file.startswith("1955"):
             continue
         file_path = os.path.join(os.path.dirname(__file__), "Years", file)
         with open(file_path, newline='') as f:
             reader = csv.reader(f)
+            header = reader.__next__()
+            next(reader)
+            values_str = reader.__next__()
+            next(reader)
+            values = []
+            local_weights = weights.copy()
+            local_priority = priority_weights.copy()
+            for val in values_str:
+                values.append(float(val))
+            for i in range(len(values)):
+                if values[i] == 0 and i != len(values)-1:
+                    dest = -1
+                    for j in range(i):
+                        test = heapq.heappop(local_priority)
+                        if test[1] == i+1:
+                            dest = test[1]
+                    if dest == -1:
+                        dest = heapq.heappop(local_priority)[1]
+                    local_priority = priority_weights.copy()
+                    local_weights[dest] += local_weights[i]
+                    continue
+                else:
+                    values[i] *= local_weights[i]
+
+            write_path = "Normalized Years/" + str(file[0:4]) + "_normalized.csv"
+            with open(write_path, 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(header)
+                writer.writerow(values)
+            print(file[0:4], "- Normalized, Complete")
 
 
 if __name__ == "__main__":

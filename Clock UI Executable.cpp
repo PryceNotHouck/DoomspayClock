@@ -1,0 +1,257 @@
+// Used here: Winbase.h header documentation and WinAPI documentation directory from Microsoft, various feature-sepcific
+// implementation questions on Stack Overflow, Windows App Development guide
+
+#include <windows.h>
+#include <cmath>
+#include <string>
+#include <sstream>
+
+// global variables
+HINSTANCE hInst;
+LPCSTR szTitle = "Circle Window"; // window title
+LPCSTR szWindowClass = "CIRCLEWINDOW"; // window class name
+
+// forward declarations of functions included in this code module:
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+
+// global variables for clock hands and time input
+static std::string timeInput = "12:00";
+static int hour = 0, minute = 0;
+static HWND hTextRemaining;
+
+// control IDs
+#define ID_COMBOBOX 101
+#define ID_SUBMIT 102
+#define ID_TEXT 103
+
+// entry point here
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+    // register window class
+    WNDCLASSEX wcex;
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = nullptr;
+    wcex.lpszClassName = szWindowClass;
+    wcex.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
+
+    if (!RegisterClassEx(&wcex))
+    {
+        MessageBox(nullptr, "Call to RegisterClassEx failed!", "Win32 Guided Tour", MB_OK);
+        return 1;
+    }
+
+    // create the window
+    HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 500, 500, nullptr, nullptr, hInstance, nullptr);
+
+    if (!hWnd)
+    {
+        MessageBox(nullptr, "Call to CreateWindow failed!", "Win32 Guided Tour", MB_OK);
+        return 1;
+    }
+
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
+
+    //main message loop
+    MSG msg;
+    while (GetMessage(&msg, nullptr, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return (int)msg.wParam;
+}
+
+// function to parse time input
+void ParseTimeInput(const std::string& input)
+{
+    std::stringstream ss(input);
+    char colon;
+    ss >> hour >> colon >> minute;
+}
+
+// function to draw the clock hands
+void DrawClockHands(HDC hdc, int centerX, int centerY, int radius)
+{
+    // calculate hand positions
+    double hourAngle = (hour % 12 + minute / 60.0) * 2 * 3.141592653589793 / 12;
+    double minuteAngle = minute * 2 * 3.141592653589793 / 60;
+
+    int hourHandLength = radius * 0.5;
+    int minuteHandLength = radius * 0.8;
+
+    // hour hand stat
+    int hourHandX = centerX + (int)(hourHandLength * sin(hourAngle));
+    int hourHandY = centerY - (int)(hourHandLength * cos(hourAngle));
+
+    // minute hand stat
+    int minuteHandX = centerX + (int)(minuteHandLength * sin(minuteAngle));
+    int minuteHandY = centerY - (int)(minuteHandLength * cos(minuteAngle));
+
+    // draw hour hand
+    HPEN hPenHour = CreatePen(PS_SOLID, 4, RGB(255, 0, 0)); // Red color for hour hand
+    HPEN hOldPenHour = (HPEN)SelectObject(hdc, hPenHour);
+    MoveToEx(hdc, centerX, centerY, nullptr);
+    LineTo(hdc, hourHandX, hourHandY);
+    SelectObject(hdc, hOldPenHour);
+    DeleteObject(hPenHour);
+
+    // draw minute hand
+    HPEN hPenMinute = CreatePen(PS_SOLID, 2, RGB(0, 0, 255)); // Blue color for minute hand
+    HPEN hOldPenMinute = (HPEN)SelectObject(hdc, hPenMinute);
+    MoveToEx(hdc, centerX, centerY, nullptr);
+    LineTo(hdc, minuteHandX, minuteHandY);
+    SelectObject(hdc, hOldPenMinute);
+    DeleteObject(hPenMinute);
+}
+
+// function to update the text box with remaining minutes until midnight
+void UpdateRemainingMinutes(HWND hWnd)
+{
+    // calculate the minutes remaining until midnight
+    int totalMinutes = (hour - 12) * 60 + minute;
+    if (totalMinutes < 0) totalMinutes += 720; // adjust for times before 12:00 :::::this part is screwed up, come back later
+
+    std::stringstream ss;
+    ss << "There are currently " << totalMinutes << " minutes until midnight";
+    SetWindowText(hTextRemaining, ss.str().c_str());
+}
+
+// window procedure function
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    static HBRUSH black;
+    static HBRUSH white;
+    static HWND hComboBox;
+    static HWND hButtonSubmit;
+
+    switch (message)
+    {
+        case WM_CREATE:
+            // create brushes for black and white
+            black = CreateSolidBrush(RGB(0, 0, 0));
+            white = CreateSolidBrush(RGB(255, 255, 255));
+
+            // create a combobox for year selection
+            hComboBox = CreateWindow("COMBOBOX", nullptr, WS_CHILD | WS_VSCROLL | WS_VISIBLE | CBS_DROPDOWNLIST,
+                                     50, 50, 100, 500, hWnd, (HMENU)ID_COMBOBOX,
+                                     GetModuleHandle(nullptr), nullptr);
+
+            // populate combobox with years from 1930 to 2024
+            for (int i = 1930; i <= 2024; i++)
+            {
+                std::stringstream ss;
+                ss << i;
+                SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)ss.str().c_str());
+            }
+
+            // set default selection
+            SendMessage(hComboBox, CB_SETCURSEL, 0, 0);
+
+            // create a button to submit the selected year
+            hButtonSubmit = CreateWindow("BUTTON", "Set Time", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 160, 50, 75, 25, hWnd, (HMENU)ID_SUBMIT, GetModuleHandle(nullptr), nullptr);
+
+            // create a static text control for displaying remaining minutes
+            hTextRemaining = CreateWindow("STATIC", "", WS_CHILD | WS_VISIBLE, 50, 90, 250, 35, hWnd, (HMENU)ID_TEXT, GetModuleHandle(nullptr), nullptr);
+            UpdateRemainingMinutes(hWnd); // Initialize text
+            break;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == ID_SUBMIT)
+            {
+                // get the selected year from the combobox
+                int index = SendMessage(hComboBox, CB_GETCURSEL, 0, 0);
+                char buffer[10];
+                SendMessage(hComboBox, CB_GETLBTEXT, index, (LPARAM)buffer);
+                timeInput = buffer;
+                ParseTimeInput(timeInput);
+                InvalidateRect(hWnd, nullptr, TRUE); // Request repaint
+                UpdateRemainingMinutes(hWnd); // Update remaining minutes text
+            }
+            break;
+
+        case WM_PAINT:
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            // set the background to white
+            FillRect(hdc, &ps.rcPaint, white);
+
+            // draw a white circle with a black border
+            RECT rect;
+            GetClientRect(hWnd, &rect);
+            int centerX = (rect.right - rect.left) / 2;
+            int centerY = (rect.bottom - rect.top) / 2;
+            int radius = 100; // Radius of the circle
+
+            // create a white brush for the fill and a black pen for the border
+            HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, white);
+            HPEN hPenBlack = CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
+            HPEN hOldPen = (HPEN)SelectObject(hdc, hPenBlack);
+
+            // draw the filled white circle
+            Ellipse(hdc, centerX - radius, centerY - radius, centerX + radius, centerY + radius);
+
+            // draw border of the circle
+            SelectObject(hdc, hPenBlack);
+            SelectObject(hdc, hOldBrush);
+            SelectObject(hdc, hOldPen);
+
+            // Cleanup
+            DeleteObject(hPenBlack);
+
+            // draw 60 dashes around circle for minutes
+            int dashLength = 10; // length of the normal dashes
+            int longDashLength = 15; // length of the thicker 5 dashes
+            int thicknessNormal = 1; // thickness of normal dashes
+            int thicknessThick = 3; // thickness of thicker dashes
+
+            for (int i = 0; i < 60; ++i)
+            {
+                double angle = i * 2 * 3.141592653589793 / 60; // Angle for each dash
+                int startX = centerX + (int)((radius - 10) * cos(angle)); // Start point of the dash
+                int startY = centerY - (int)((radius - 10) * sin(angle)); // Start point of the dash
+                int endX = centerX + (int)((radius - 10 - (i % 5 == 0 ? longDashLength : dashLength)) * cos(angle)); // End point of the dash
+                int endY = centerY - (int)((radius - 10 - (i % 5 == 0 ? longDashLength : dashLength)) * sin(angle)); // End point of the dash
+
+                // choose the pen based on dash index
+                HPEN hPenDash = CreatePen(PS_SOLID, (i % 5 == 0 ? thicknessThick : thicknessNormal), RGB(0, 0, 0));
+                HPEN hOldPenDash = (HPEN)SelectObject(hdc, hPenDash);
+
+                // draw dash
+                MoveToEx(hdc, startX, startY, nullptr);
+                LineTo(hdc, endX, endY);
+
+                SelectObject(hdc, hOldPenDash);
+                DeleteObject(hPenDash);
+            }
+
+            // draw clock hands
+            DrawClockHands(hdc, centerX, centerY, radius);
+
+            EndPaint(hWnd, &ps);
+        }
+            break;
+
+        case WM_DESTROY:
+            // clean brushes
+            DeleteObject(black);
+            DeleteObject(white);
+            PostQuitMessage(0);
+            break;
+
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
+}

@@ -105,8 +105,6 @@ def normalize_annual():
         midnight[i] *= float(weights[i])
 
     for file in os.listdir(year_data_path):
-        if file.startswith("2009") or file.startswith("1955"):
-            continue
         file_path = os.path.join(os.path.dirname(__file__), "Years", file)
         with open(file_path, newline='') as f:
             reader = csv.reader(f)

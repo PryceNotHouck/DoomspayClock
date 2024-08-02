@@ -24,9 +24,12 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 // global variables for clock hands and time input
 static string timeInput = "12:00";
+static string currYear;
 static int hour = 0, minute = 0, second = 0;
 map<string, vector<int>> highlights;
+static vector<string> variables;
 static bool isDepression = false;
+static bool drawHighlights = false;
 static HWND timeRemainingText;
 
 // control IDs
@@ -78,8 +81,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 }
 
 void getHighlights(const string& filepath, const string& year) {
+    drawHighlights = true;
     ifstream file;
-    vector<string> variables;
     multiset<pair<float, int>> values;
     string row;
     string temp;
@@ -149,7 +152,7 @@ void ParseTimeInput(const string& input) {
     float ttm = ((2 * (current - midnight))/(noon - midnight)) - 1;
     float time = (ttm * 21600) + 21600;
 
-    if (ttm < 0) {
+    if (stoi(input) <= 1940) {
         isDepression = true;
         int hours = 0;
         int minutes = 0;
@@ -169,7 +172,6 @@ void ParseTimeInput(const string& input) {
         hour = hours;
         minute = minutes;
         second = seconds;
-        cout << "Depression Year" << endl;
     } else {
         isDepression = false;
         int hours = 0;
@@ -187,7 +189,6 @@ void ParseTimeInput(const string& input) {
             seconds++;
             time--;
         }
-        cout << input << ": " << "Hours: " << hours << ", Minutes: " << minutes << ", Seconds: " << seconds << endl;
         hour = hours;
         minute = minutes;
         second = seconds;
@@ -205,9 +206,9 @@ void DrawClockHands(HDC hdc, int centerX, int centerY, int radius) {
         minuteAngle = 0;
         secondAngle = 0;
     } else {
-        hourAngle = (hour % 12 + minute / 60.0) * 2 * 3.14159 / 12;
-        minuteAngle = minute * 2 * 3.14159 / 60;
-        secondAngle = second * 2 * 3.14159 / 60;
+        hourAngle = ((hour % 12 + minute / 60.0) * 2 * 3.14159 / 12) * -1;
+        minuteAngle = (minute * 2 * 3.14159 / 60) * -1;
+        secondAngle = (second * 2 * 3.14159 / 60) * -1;
     }
 
     int hourHandLength = radius * 0.5;
@@ -262,18 +263,166 @@ void UpdateRemainingTime() {
     SetWindowText(timeRemainingText, ss.str().c_str());
 }
 
+string addFlavorText(string text, int i) {
+    if (text == "GDP Delta") {
+        if (i == 1) {
+            text = "Negative GDP Growth\nThis year's most damaging feature\nis its major decline in annual GDP.";
+        } else if (i == 2) {
+            text = "Negative GDP Growth\nThis year's second most damaging feature\nis its moderate decline in annual GDP.";
+        } else {
+            text = "Negative GDP Growth\nThis year's third most damaging feature\nis its notable decline in annual GDP.";
+        }
+    } else if (text == "Average Unemployment\r") {
+        if (i == 1) {
+            text = "Unemployment\nThis year's most damaging feature\nis its substantial increase in unemployment.";
+        } else if (i == 2) {
+            text = "Unemployment\nThis year's second most damaging feature\nis its moderate increase in unemployment.";
+        } else {
+            text = "Unemployment\nThis year's third most damaging feature\nis its notable increase in unemployment.";
+        }
+    } else if (text == "Average Labor Force") {
+        if (i == 1) {
+            text = "Labor Availability\nThis year's most damaging feature is\nits major drop in the availability of workers.";
+        } else if (i == 2) {
+            text = "Labor Availability\nThis year's second most damaging feature is\nits moderate drop in the availability of workers.";
+        } else {
+            text = "Labor Availability\nThis year's third most damaging feature is\nits notable drop in the availability of workers.";
+        }
+    } else if (text == "Personal Savings %") {
+        if (i == 1) {
+            text = "Low Personal Savings\nThis year's most damaging feature is its\nsignificant shortage in personal savings.";
+        } else if (i == 2) {
+            text = "Low Personal Savings\nThis year's second most damaging feature\nis it moderate shortage in personal savings.";;
+        } else {
+            text = "Low Personal Savings\nThis year's third most damaging feature\nis its notable shortage in personal savings.";;
+        }
+    } else if (text == "Goods Consumption") {
+        if (i == 1) {
+            text = "Goods Consumption\nThis year's most damaging features is its\nmajor decline in the\nconsumption of consumer goods.";
+        } else if (i == 2) {
+            text = "Goods Consumption\nThis year's second most damaging features\nis its moderate decline in\nthe consumption of consumer goods.";
+        } else {
+            text = "Goods Consumption\nThis year's third most damaging features\n is its notable decline in\nthe consumption of consumer goods.";
+        }
+    } else if (text == "Government Consumption and Gross Investment") {
+        if (i == 1) {
+            text = "Government Spending\nThis year's most damaging feature is its\nirresponsible government\nconsumption and investment.";
+        } else if (i == 2) {
+            text = "Government Spending\nThis year's second most damaging feature\nis its irresponsible government\nconsumption and investment.";
+        } else {
+            text = "Government Spending\nThis year's third most damaging feature\nis its irresponsible government\nconsumption and investment.";
+        }
+    } else if (text == "Import of Goods") {
+        if (i == 1) {
+            text = "Import of Goods\nThis year's most damaging feature is its\nmajor decline in the import\nof foreign goods.";
+        } else if (i == 2) {
+            text = "Import of Goods\nThis year's second most damaging feature\nis its moderate decline in the import\nof foreign goods.";
+        } else {
+            text = "Import of Goods\nThis year's third most damaging feature\nis its notable decline in the import\nof foreign goods.";
+        }
+    } else if (text == "Average Interest Rate") {
+        if (i == 1) {
+            text = "High Interest Rates\nThis year's most damaging feature is its\nincredibly high interest rates.";
+        } else if (i == 2) {
+            text = "High Interest Rates\nThis year's second most damaging feature\nis its moderately high interest rates.";
+        } else {
+            text = "High Interest Rates\nThis year's third most damaging feature\nis its notably high interest rates.";
+        }
+    } else if (text == "Average Inflation Rate") {
+        if (i == 1) {
+            text = "High Inflation\nThis year's most damaging feature is its\nvery high rate of inflation.";
+        } else if (i == 2) {
+            text = "High Inflation\nThis year's second most damaging feature\nis its moderately high rate of inflation.";
+        } else {
+            text = "High Inflation\nThis year's third most damaging feature\nis its notably high rate of inflation.";
+        }
+    } else if (text == "Residential") {
+        if (i == 1) {
+            text = "Housing Availability\nThis year's most damaging feature is its\nremarkably low access to housing.";
+        } else if (i == 2) {
+            text = "Housing Availability\nThis year's second most damaging feature\nis its moderately low access to housing.";
+        } else {
+            text = "Housing Availability\nThis year's third most damaging feature\nis its notably low access to housing.";
+        }
+    } else if (text == "Average All Loans Default Rate") {
+        if (i == 1) {
+            text = "Default Rate - All Loans\nThis year's most damaging feature is its\nincredibly high default rate on all loans.";
+        } else if (i == 2) {
+            text = "Default Rate - All Loans\nThis year's second most damaging feature\nis its moderately high default rate on all loans.";
+        } else {
+            text = "Default Rate - All Loans\nThis year's third most damaging feature\nis its notably high default rate on all loans.";
+        }
+    } else if (text == "Consumer Confidence") {
+        if (i == 1) {
+            text = "Consumer Confidence\nThis year's most damaging feature is its\nvery low consumer confidence index.";
+        } else if (i == 2) {
+            text = "Consumer Confidence\nThis year's second most damaging feature\nis its moderately low consumer confidence index.";
+        } else {
+            text = "Consumer Confidence\nThis year's third most damaging feature\nis its notably low consumer confidence index.";
+        }
+    } else if (text == "Average Median Price") {
+        if (i == 1) {
+            text = "Housing Market\nThis year's most damaging feature is its\nseverely prohibitive housing market.";
+        } else if (i == 2) {
+            text = "Housing Market\nThis year's second most damaging feature is its\nmoderately prohibitive housing market.";
+        } else {
+            text = "Housing Market\nThis year's third most damaging feature is its\nnotably prohibitive housing market.";
+        }
+    } else if (text == "Year-In Change") {
+        if (i == 1) {
+            text = "Housing Price Change\nThis year's most damaging feature is its\nsevere change in housing prices.";
+        } else if (i == 2) {
+            text = "Housing Price Change\nThis year's second most damaging feature\nis its moderate change in housing prices.";
+        } else {
+            text = "Housing Price Change\nThis year's third most damaging feature\nis its notable change in housing prices.";
+        }
+    }
+    return text;
+}
+
+void drawHighlight(HDC hdc, int top, int bottom, int left, int right, HBRUSH color, string text, int box) {
+    text = addFlavorText(text, box);
+    RECT highlight_box = {left, top, right, bottom};
+    HPEN drawOutline = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
+    auto oldBrush = (HBRUSH)SelectObject(hdc, color);
+    auto oldDrawOutline = (HPEN)SelectObject(hdc, drawOutline);
+
+    FillRect(hdc, &highlight_box, color);
+    Rectangle(hdc, left, top, right, bottom);
+    SelectObject(hdc, oldDrawOutline);
+    DeleteObject(drawOutline);
+    SetBkMode(hdc, TRANSPARENT);
+
+    SetTextColor(hdc, RGB(0, 0, 0));
+    LPCSTR box_text = text.c_str();
+
+    DrawText(hdc, box_text, -1, &highlight_box, DT_CENTER | DT_VCENTER);
+    SelectObject(hdc, oldBrush);
+}
+
 // window procedure function
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     static HBRUSH black;
     static HBRUSH white;
+    static HBRUSH grey;
+    static HBRUSH red;
+    static HBRUSH orange;
+    static HBRUSH yellow;
     static HWND years;
     static HWND submit;
+    static HWND highlight1;
+    static HWND highlight2;
+    static HWND highlight3;
 
     switch (message) {
         case WM_CREATE:
             // create brushes for black and white
             black = CreateSolidBrush(RGB(0, 0, 0));
             white = CreateSolidBrush(RGB(255, 255, 255));
+            grey = CreateSolidBrush(RGB(196, 196, 196));
+            red = CreateSolidBrush(RGB(195, 40, 23));
+            orange = CreateSolidBrush(RGB(195, 126, 23));
+            yellow = CreateSolidBrush(RGB(178, 195, 23));
 
             // create a combobox for year selection
             years = CreateWindow("COMBOBOX", nullptr, WS_CHILD | WS_VSCROLL | WS_VISIBLE | CBS_DROPDOWNLIST,
@@ -291,24 +440,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             SendMessage(years, CB_SETCURSEL, 0, 0);
 
             // create a button to submit the selected year
-            submit = CreateWindow("BUTTON", "Set Time", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 160, 50, 75, 25, hWnd, (HMENU)ID_SUBMIT, GetModuleHandle(nullptr), nullptr);
+            submit = CreateWindow("BUTTON", "Set Time", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 160, 50, 75, 25, hWnd,
+                                  (HMENU)ID_SUBMIT, GetModuleHandle(nullptr), nullptr);
 
             // create a static text control for displaying remaining minutes
             timeRemainingText = CreateWindow("STATIC", "", WS_CHILD | WS_VISIBLE, 50, 90, 250, 35, hWnd, (HMENU)ID_TEXT,
                                           GetModuleHandle(nullptr), nullptr);
+
             UpdateRemainingTime(); // Initialize text
             break;
 
         case WM_COMMAND:
             if (LOWORD(wParam) == ID_SUBMIT) {
-                // get the selected year from the combobox
+                // get the selected year from the year dropdown
                 int index = SendMessage(years, CB_GETCURSEL, 0, 0);
                 char buffer[10];
                 SendMessage(years, CB_GETLBTEXT, index, (LPARAM)buffer);
                 timeInput = buffer;
+                currYear = timeInput;
                 ParseTimeInput(timeInput);
-                InvalidateRect(hWnd, nullptr, TRUE); // Request repaint
-                UpdateRemainingTime(); // Update remaining minutes text
+                InvalidateRect(hWnd, nullptr, TRUE); // Repaint
+                UpdateRemainingTime(); // Update remaining time
             }
             break;
 
@@ -317,7 +469,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             HDC hdc = BeginPaint(hWnd, &ps);
 
             // set the background to white
-            FillRect(hdc, &ps.rcPaint, white);
+            FillRect(hdc, &ps.rcPaint, grey);
 
             // draw a white circle with a black border
             RECT rect;
@@ -327,20 +479,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             int radius = 100; // Radius of the circle
 
             // create a white brush for the fill and a black pen for the border
-            HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, white);
-            HPEN hPenBlack = CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
-            HPEN hOldPen = (HPEN)SelectObject(hdc, hPenBlack);
+            HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, white);
+            HPEN blackPen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
+            HPEN oldPen = (HPEN)SelectObject(hdc, blackPen);
 
             // draw the filled white circle
             Ellipse(hdc, centerX - radius, centerY - radius, centerX + radius, centerY + radius);
 
             // draw border of the circle
-            SelectObject(hdc, hPenBlack);
-            SelectObject(hdc, hOldBrush);
-            SelectObject(hdc, hOldPen);
+            SelectObject(hdc, blackPen);
+            SelectObject(hdc, oldBrush);
+            SelectObject(hdc, oldPen);
 
             // Cleanup
-            DeleteObject(hPenBlack);
+            DeleteObject(blackPen);
+
+            if (drawHighlights) {
+                drawHighlight(hdc, centerY - 170, centerY - 90, centerX + 120, centerX + 420,
+                              red, variables[highlights[currYear][0]], 1);
+                drawHighlight(hdc, centerY - 70, centerY + 20, centerX + 120, centerX + 420,
+                              orange, variables[highlights[currYear][1]], 2);
+                drawHighlight(hdc, centerY + 40, centerY + 130, centerX + 120, centerX + 420,
+                              yellow, variables[highlights[currYear][2]], 3);
+            }
 
             // draw 60 dashes around circle for minutes
             int dashLength = 10; // length of the normal dashes
@@ -357,13 +518,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
                 // choose the pen based on dash index
                 HPEN hPenDash = CreatePen(PS_SOLID, (i % 5 == 0 ? thicknessThick : thicknessNormal), RGB(0, 0, 0));
-                HPEN hOldPenDash = (HPEN)SelectObject(hdc, hPenDash);
+                HPEN oldPenDash = (HPEN)SelectObject(hdc, hPenDash);
 
                 // draw dash
                 MoveToEx(hdc, startX, startY, nullptr);
                 LineTo(hdc, endX, endY);
 
-                SelectObject(hdc, hOldPenDash);
+                SelectObject(hdc, oldPenDash);
                 DeleteObject(hPenDash);
             }
 

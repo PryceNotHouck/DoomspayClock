@@ -123,6 +123,7 @@ def credit():
                     else:
                         credit_del += float(row[1])
 
+    # note to self: dont do this way again it isnt really better
     data_list = [[year, *values] for year, values in sorted(data.items())]
     compiled = pd.DataFrame(data_list, columns=['Year', 'Average Consumer Loan Default Rate',
                                                 'Average All Loans Default Rate', 'Average Credit Delinquency',

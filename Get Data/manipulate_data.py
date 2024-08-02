@@ -81,7 +81,7 @@ def calculate_economic_score(df, columns_to_normalize):
         scores[index] = value
         value = 0
 
-        # Sum the ranks to get the economic score
+
 
     return scores
 

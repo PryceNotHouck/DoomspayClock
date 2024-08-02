@@ -57,14 +57,14 @@ columns_to_normalize = {
     'Consumer Confidence Delta': 'positive'
 }
 
-# Function to normalize a column between -1 and 1
+
 def normalize_columns(df, columns_to_normalize):
     scaler = MinMaxScaler()
     columns = list(columns_to_normalize.keys())
     df[columns] = scaler.fit_transform(df[columns])
     return df
 
-# Normalize the columns in the merged dataframe
+
 normalized_df = normalize_columns(df, columns_to_normalize)
 
 
@@ -89,7 +89,7 @@ economic_scores = calculate_economic_score(normalized_df, columns_to_normalize)
 
 economic_scores_series = pd.Series(economic_scores)
 
-# Normalize the economic score to range between -1 and 1
+
 scaler = MinMaxScaler(feature_range=(-1, 1))
 normalized_economic_score = scaler.fit_transform(economic_scores_series.values.reshape(-1, 1)).flatten()
 

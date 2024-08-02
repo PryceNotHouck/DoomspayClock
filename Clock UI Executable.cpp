@@ -149,6 +149,8 @@ void ParseTimeInput(const string& input) {
     // line with other years.
     if (stoi(input) >= 1929 && stoi(input) <= 1940)
         current += 10;
+    else if (stoi(input) >= 2001 && stoi(input) <= 2007)
+        current -= 0.25;  // static modifier for CDO-dominated markets, which are also difficult to compare to.
     float ttm = ((2 * (current - midnight))/(noon - midnight)) - 1;
     float time = (ttm * 21600) + 21600;
 
@@ -264,6 +266,7 @@ void UpdateRemainingTime() {
 }
 
 string addFlavorText(string text, int i) {
+    cout << text << endl;
     if (text == "GDP Delta") {
         if (i == 1) {
             text = "Negative GDP Growth\nThis year's most damaging feature\nis its major decline in annual GDP.";
@@ -375,6 +378,14 @@ string addFlavorText(string text, int i) {
             text = "Housing Price Change\nThis year's second most damaging feature\nis its moderate change in housing prices.";
         } else {
             text = "Housing Price Change\nThis year's third most damaging feature\nis its notable change in housing prices.";
+        }
+    } else if (text == "Year-In Business Loan Default Change") {
+        if (i == 1) {
+            text = "Business Loan Defaults\nThis year experienced a massive increase in\nbusiness loan defaults.";
+        } else if (i == 2) {
+            text = "Business Loan Defaults\nThis year experienced a moderate increase in\nbusiness loan defaults.";
+        } else {
+            text = "Business Loan Defaults\nThis year experienced a notable increase in\nbusiness loan defaults.";
         }
     }
     return text;

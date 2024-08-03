@@ -38,11 +38,10 @@ def stress_test_pure():
     descending = sorted(data, reverse=True)
     with timer('stress_timer', unit='s') as t:
         for i in range(len(data)):
-            print(f"PQ at Size {len(priority)}: {float(t.elapse/1000)} s")
             for j in range(len(descending)):
                 if data[i] == descending[j]:
                     heapq.heappush(priority, (j+1, i))
-        print("Final Time:", t.elapse)
+        print(f'Final Time: {t.elapse / 1000} s')
 
 
 def stress_test_graph():

@@ -15,9 +15,9 @@
 using namespace std;
 
 // global variables
-HINSTANCE hInst;
-LPCSTR szTitle = "Circle Window"; // window title
-LPCSTR szWindowClass = "CIRCLEWINDOW"; // window class name
+HINSTANCE inst;
+LPCSTR windowTitle = "Circle Window"; // window title
+LPCSTR windowClass = "CIRCLEWINDOW"; // window class name
 
 // forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -38,7 +38,7 @@ static HWND timeRemainingText;
 #define ID_TEXT 103
 
 // entry point here
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR line, int showCommand) {
     // register window class
     WNDCLASSEX wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -46,12 +46,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     wcex.lpfnWndProc = WndProc;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
-    wcex.hInstance = hInstance;
+    wcex.hInstance = instance;
     wcex.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = nullptr;
-    wcex.lpszClassName = szWindowClass;
+    wcex.lpszClassName = windowClass;
     wcex.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
 
     if (!RegisterClassEx(&wcex)) {
@@ -60,15 +60,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     // create the window
-    HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
-                             nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindow(windowClass, windowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
+                             nullptr, nullptr, instance, nullptr);
 
     if (!hWnd) {
         MessageBox(nullptr, "Call to CreateWindow failed!", "Win32 Guided Tour", MB_OK);
         return 1;
     }
 
-    ShowWindow(hWnd, nCmdShow);
+    ShowWindow(hWnd, showCommand);
     UpdateWindow(hWnd);
 
     //main message loop
@@ -266,7 +266,6 @@ void UpdateRemainingTime() {
 }
 
 string addFlavorText(string text, int i) {
-    cout << text << endl;
     if (text == "GDP Delta") {
         if (i == 1) {
             text = "Negative GDP Growth\nThis year's most damaging feature\nis its major decline in annual GDP.";

@@ -101,3 +101,15 @@ normalized_df.to_csv('final_normalized_economic_scores.csv', index=False)
 
 # Print the final economic scores
 print(normalized_df[['Year', 'Economic Score']])
+
+
+def test100000(df):
+    data = np.random.rand(100, 1000)
+    df = pd.DataFrame(data, columns=[f'col_{i}' for i in range(1000)])
+    df['new_col'] = np.random.rand(100)
+
+
+    return 0
+
+
+test100000(normalized_df)

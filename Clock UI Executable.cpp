@@ -258,9 +258,9 @@ void DrawClockHands(HDC hdc, int centerX, int centerY, int radius) {
 void UpdateRemainingTime() {
     stringstream ss;
     if (isDepression) {
-        ss << "Great Depression Year, " << hour << " hours, " << minute << " minutes, and " << second << " seconds past midnight.";
+        ss << "Great Depression Year, the US was " << hour << " hours, " << minute << " minutes, and " << second << " seconds past midnight!"; //change
     } else {
-        ss << hour << " hours, " << minute << " minutes, and " << second << " seconds to midnight.";
+        ss << "The United States in " << year << "was " << hour << " hours, " << minute << " minutes, and " << second << " seconds to midnight...";  //change
     }
     SetWindowText(timeRemainingText, ss.str().c_str());
 }

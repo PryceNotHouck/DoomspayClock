@@ -2,7 +2,7 @@
 #include <cmath>
 #include <string>
 #include <sstream>
-
+//updated with digital clock functionality and corrected math for time calculation
 // global variables
 HINSTANCE hInst;
 LPCSTR szTitle = "Circle Window"; // window title
@@ -114,13 +114,49 @@ void DrawClockHands(HDC hdc, int centerX, int centerY, int radius)
 // function to update the text box with remaining minutes until midnight
 void UpdateRemainingMinutes(HWND hWnd)
 {
-    // calculate the minutes remaining until midnight
-    int totalMinutes = (hour - 12) * 60 + minute;
-    if (totalMinutes < 0) totalMinutes += 720; // adjust for times before 12:00 :::::this part is screwed up, come back later
+    int totalMinutes = (12 * 60) - (hour*60 + minute);
 
     std::stringstream ss;
     ss << "There are currently " << totalMinutes << " minutes until midnight";
     SetWindowText(hTextRemaining, ss.str().c_str());
+}
+
+void DrawDigitalClock(HDC hdc, int centerX, int centerY, int radius)
+{
+    // this will set up font and color for digital clock
+    HFONT hFont = CreateFont(
+            24,                // height of font
+            0,                 // average character width
+            0,                 // escapement angle
+            0,                 // base-line orientation angle
+            FW_BOLD,           // font weight
+            FALSE,             // italic no
+            FALSE,             // underline no
+            FALSE,             // strikeout no
+            ANSI_CHARSET,      // character set identifier
+            OUT_TT_PRECIS,     // output precision
+            CLIP_DEFAULT_PRECIS, // clipping precision
+            ANTIALIASED_QUALITY, // output quality
+            DEFAULT_PITCH,     // pitch and family
+            "Arial");          // font
+
+    HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
+    COLORREF oldTextColor = SetTextColor(hdc, RGB(255, 0, 0));
+
+    //draws dig clock
+    std::stringstream ss;
+    ss << (hour < 10 ? "0" : "") << hour << ":" << (minute < 10 ? "0" : "") << minute;
+    std::string timeStr = ss.str();
+
+    RECT timeRect;
+    SetRect(&timeRect, centerX - 50, centerY + radius + 10, centerX + 50, centerY + radius + 40);
+
+    DrawText(hdc, timeStr.c_str(), -1, &timeRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+    // Cleanup
+    SetTextColor(hdc, oldTextColor);
+    SelectObject(hdc, hOldFont);
+    DeleteObject(hFont);
 }
 
 // window procedure function
@@ -162,6 +198,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             break;
 
+
         case WM_PAINT:
         {
             PAINTSTRUCT ps;
@@ -190,7 +227,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SelectObject(hdc, hOldBrush);
             SelectObject(hdc, hOldPen);
 
-            // Cleanup
+            // cleanup
             DeleteObject(hPenBlack);
 
             // draw 60 dashes around circle for minutes
@@ -222,12 +259,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // draw clock hands
             DrawClockHands(hdc, centerX, centerY, radius);
 
+            // draw digital clock display UPDATE
+            DrawDigitalClock(hdc, centerX, centerY, radius);
+
             EndPaint(hWnd, &ps);
         }
             break;
 
+
+
+
+
         case WM_DESTROY:
-            // clean brushes
+            // "clean brushes" / delete the brush objects after use for cleaner code/ to avoid any potential issues
             DeleteObject(hBrushBlack);
             DeleteObject(hBrushWhite);
             PostQuitMessage(0);

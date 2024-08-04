@@ -262,10 +262,22 @@ void DrawClockHands(HDC hdc, int centerX, int centerY, int radius) {
 // function to update the text box with remaining minutes until midnight
 void UpdateRemainingTime() {
     stringstream ss;
+    bool hour1 = false;
+    if (hour == 1) {
+        hour1 = true;
+    }
+    if (isDepression && hour1) {
+        ss << "Great Depression: US was " << hour << " hr, " << minute << " mins, and " << second << " secs past midnight!\n"; //change
+
+    }
+    if (!isDepression && hour1) {
+        ss << "US in " << currYear << " was " << hour << " hr, " << minute << " mins, and " << second << " secs to midnight...\n";  //change
+
+    }
     if (isDepression) {
-        ss << "Great Depression Year, the US was " << hour << " hours, " << minute << " minutes, and " << second << " seconds past midnight!"; //change
+        ss << "Great Depression: US was " << hour << " hrs, " << minute << " mins, and " << second << " secs past midnight!\n"; //change
     } else {
-        ss << "The United States in " << currYear << " was " << hour << " hours, " << minute << " minutes, and " << second << " seconds to midnight...";  //change
+        ss << "US in " << currYear << " was " << hour << " hrs, " << minute << " mins, and " << second << " secs to midnight...\n";  //change
     }
     SetWindowText(timeRemainingText, ss.str().c_str());
 }

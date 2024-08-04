@@ -25,6 +25,9 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 // global variables for clock hands and time input
 static string timeInput = "12:00";
 static string currYear;
+static string disclaimerText = "The year selected occurred during the Great\nDepression, an event with causes and\n"
+                                "consequences that are difficult to compare to\nany other year in "
+                                "American history,\nso take the given time with a grain of salt.";
 static int hour = 0, minute = 0, second = 0;
 map<string, vector<int>> highlights;
 static vector<string> variables;
@@ -60,7 +63,7 @@ int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR line, int
     }
 
     // create the window
-    HWND hWnd = CreateWindow(windowClass, windowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
+    HWND hWnd = CreateWindow(windowClass, windowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1200, 800,
                              nullptr, nullptr, instance, nullptr);
 
     if (!hWnd) {
@@ -260,7 +263,7 @@ void UpdateRemainingTime() {
     if (isDepression) {
         ss << "Great Depression Year, the US was " << hour << " hours, " << minute << " minutes, and " << second << " seconds past midnight!"; //change
     } else {
-        ss << "The United States in " << year << "was " << hour << " hours, " << minute << " minutes, and " << second << " seconds to midnight...";  //change
+        ss << "The United States in " << currYear << " was " << hour << " hours, " << minute << " minutes, and " << second << " seconds to midnight...";  //change
     }
     SetWindowText(timeRemainingText, ss.str().c_str());
 }
@@ -391,7 +394,8 @@ string addFlavorText(string text, int i) {
 }
 
 void drawHighlight(HDC hdc, int top, int bottom, int left, int right, HBRUSH color, string text, int box) {
-    text = addFlavorText(text, box);
+    if (box > 0)
+        text = addFlavorText(text, box);
     RECT highlight_box = {left, top, right, bottom};
     HPEN drawOutline = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
     auto oldBrush = (HBRUSH)SelectObject(hdc, color);
@@ -418,6 +422,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
     static HBRUSH red;
     static HBRUSH orange;
     static HBRUSH yellow;
+    static HBRUSH blue;
     static HWND years;
     static HWND submit;
     static HWND highlight1;
@@ -433,6 +438,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             red = CreateSolidBrush(RGB(195, 40, 23));
             orange = CreateSolidBrush(RGB(195, 126, 23));
             yellow = CreateSolidBrush(RGB(178, 195, 23));
+            blue = CreateSolidBrush(RGB(174, 225, 255));
 
             // create a combobox for year selection
             years = CreateWindow("COMBOBOX", nullptr, WS_CHILD | WS_VSCROLL | WS_VISIBLE | CBS_DROPDOWNLIST,
@@ -487,6 +493,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             int centerX = (rect.right - rect.left) / 2;
             int centerY = (rect.bottom - rect.top) / 2;
             int radius = 100; // Radius of the circle
+            int redY = -170;
+            int orangeY = -70;
+            int yellowY = 40;
+
+            if (isDepression) {
+                redY += 110;
+                orangeY += 110;
+                yellowY += 110;
+            } else {
+                redY = -170;
+                orangeY = -70;
+                yellowY = 40;
+            }
 
             // create a white brush for the fill and a black pen for the border
             HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, white);
@@ -505,11 +524,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             DeleteObject(blackPen);
 
             if (drawHighlights) {
-                drawHighlight(hdc, centerY - 170, centerY - 90, centerX + 120, centerX + 420,
+                if (isDepression) {
+                    drawHighlight(hdc, centerY - 170, centerY - 80, centerX + 120, centerX + 420, blue, disclaimerText, -1);
+                }
+                drawHighlight(hdc, centerY + redY, centerY + (redY + 90), centerX + 120, centerX + 420,
                               red, variables[highlights[currYear][0]], 1);
-                drawHighlight(hdc, centerY - 70, centerY + 20, centerX + 120, centerX + 420,
+                drawHighlight(hdc, centerY + orangeY, centerY + (orangeY + 90), centerX + 120, centerX + 420,
                               orange, variables[highlights[currYear][1]], 2);
-                drawHighlight(hdc, centerY + 40, centerY + 130, centerX + 120, centerX + 420,
+                drawHighlight(hdc, centerY + yellowY, centerY + (yellowY + 90), centerX + 120, centerX + 420,
                               yellow, variables[highlights[currYear][2]], 3);
             }
 

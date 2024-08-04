@@ -2,6 +2,8 @@
 // implementation questions on Stack Overflow, Windows App Development guide, GeeksForGeeks guide to CSV management in
 // C++, Microsoft guide to errors and exception handling in C++.
 
+//https://learn.microsoft.com/en-us/windows/win32/api/winbase/
+
 #include <windows.h>
 #include <cmath>
 #include <string>

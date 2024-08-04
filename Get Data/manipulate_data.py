@@ -2,21 +2,18 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 
-# Define file paths
 housing_file = 'housing.csv'
 inflation_file = 'inflation.csv'
 loandefault_file = 'loandefault.csv'
 cpi_file = 'cpi.csv'
 cboe_file = 'cboe.csv'
 
-# Read CSV files
 housing_df = pd.read_csv(housing_file)
 inflation_df = pd.read_csv(inflation_file)
 loandefault_df = pd.read_csv(loandefault_file)
 cpi_df = pd.read_csv(cpi_file)
 cboe_df = pd.read_csv(cboe_file)
 
-# Merge dataframes on Year
 df = housing_df.merge(inflation_df, on='Year',  how='outer')\
                       .merge(loandefault_df, on='Year',  how='outer')\
                       .merge(cpi_df, on='Year',  how='outer')\
@@ -57,17 +54,13 @@ columns_to_normalize = {
     'Consumer Confidence Delta': 'positive'
 }
 
-
 def normalize_columns(df, columns_to_normalize):
     scaler = MinMaxScaler()
     columns = list(columns_to_normalize.keys())
     df[columns] = scaler.fit_transform(df[columns])
     return df
 
-
 normalized_df = normalize_columns(df, columns_to_normalize)
-
-
 
 def calculate_economic_score(df, columns_to_normalize):
     scores = list(range(43))
@@ -81,8 +74,6 @@ def calculate_economic_score(df, columns_to_normalize):
         scores[index] = value
         value = 0
 
-
-
     return scores
 
 economic_scores = calculate_economic_score(normalized_df, columns_to_normalize)
@@ -92,14 +83,8 @@ economic_scores_series = pd.Series(economic_scores)
 
 scaler = MinMaxScaler(feature_range=(-1, 1))
 normalized_economic_score = scaler.fit_transform(economic_scores_series.values.reshape(-1, 1)).flatten()
-
-# Add the normalized economic score to the dataframe
 normalized_df['Economic Score'] = normalized_economic_score
-
-# Save the final dataframe with economic scores to a new CSV file
 normalized_df.to_csv('final_normalized_economic_scores.csv', index=False)
-
-# Print the final economic scores
 print(normalized_df[['Year', 'Economic Score']])
 
 

@@ -27,20 +27,30 @@ def stress_test_pure():
     adj_list = {}
     with timer('stress_timer', unit='s') as t:
         for i in range(len(data)):
-            adj_list[random.randint(1929, 2023)].append([data[i][0], data[i][1], data[i][2], data[i][3]])
+            year = random.randint(1929, 2023)
+            try:
+                adj_list[year] += [data[i][0], data[i][1], data[i][2], data[i][3]]
+            except KeyError:
+                adj_list[year] = []
+                adj_list[year] += [data[i][0], data[i][1], data[i][2], data[i][3]]
         print(f'Final Time: {t.elapse / 1000} s')
 
 
 def stress_test_graph():
     graph_points = []
+    items_added = 0
     adj_list = {}
-    for year in range(1929, 2024):
-        adj_list[year] = []
     with timer('stress_timer', unit='s') as t:
         for i in range(len(data)):
             prev_time = float(t.elapse / 1000)
-            adj_list[random.randint(1929, 2023)].append([data[i][0], data[i][1], data[i][2], data[i][3]])
-            graph_points.append([len(adj_list), float(t.elapse / 1000) - prev_time, float(t.elapse / 1000)])
+            year = random.randint(1929, 2023)
+            try:
+                adj_list[year] += [data[i][0], data[i][1], data[i][2], data[i][3]]
+            except KeyError:
+                adj_list[year] = []
+                adj_list[year] += [data[i][0], data[i][1], data[i][2], data[i][3]]
+            items_added += 4
+            graph_points.append([items_added, float(t.elapse / 1000) - prev_time, float(t.elapse / 1000)])
         print(f'Final Time: {t.elapse / 1000} s')
     compiled = pd.DataFrame(graph_points, columns=['AL Length', 'Time to Add', 'Total Time'])
     compiled.to_csv('DS1_graph_data.csv', index=False)
@@ -49,4 +59,4 @@ def stress_test_graph():
 
 if __name__ == '__main__':
     make_test_set(100000)
-    stress_test_graph()
+    stress_test_pure()

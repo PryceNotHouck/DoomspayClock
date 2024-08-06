@@ -1,3 +1,5 @@
+# Used here: documentation and GeeksForGeeks pages associated with requests, XLRD, and OpenPyXL
+
 import zipfile
 import requests
 import csv

@@ -1,3 +1,5 @@
+# Used Here: Python.org documentation on heapq
+
 from sort_annual import sort_annual, flush_years
 import os
 import csv
